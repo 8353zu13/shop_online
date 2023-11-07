@@ -6,9 +6,9 @@ package com.soft2242.shop.common.constant;
  */
 public interface Constant {
     //    创建时间
-    String createtime = "createtime";
+    String CREATE_TIME = "createtime";
     //    更新时间
-    String updatetime = "updatetime";
+    String UPDATE_TIME = "updatetime";
     //    逻辑删除
-    String deletedflag = "deleteflag";
+    String DELETE_FLAG = "deleteflag";
 }
