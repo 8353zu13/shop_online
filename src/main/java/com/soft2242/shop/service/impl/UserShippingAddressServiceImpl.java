@@ -72,21 +72,49 @@ public class UserShippingAddressServiceImpl extends ServiceImpl<UserShippingAddr
     }
 
     /**
-     * 获取收获地址列表
+     * 获取收货地址列表
      *
-     * @param userId
+     * @param Id
      * @return
      */
     @Override
-    public List<AddressVO> userShippingAddressList(Integer userId) {
-        UserShippingAddress userShippingAddress = baseMapper.selectById(userId);
-        if(userShippingAddress == null){
-            throw new ServerException("用户不存在");
-        }
-        List<UserShippingAddress> list = baseMapper.selectList(new LambdaQueryWrapper<UserShippingAddress>()
-            .eq(UserShippingAddress::getUserId, userShippingAddress.getUserId()));
+    public List<AddressVO> getUserShippingAddressList() {
+        LambdaQueryWrapper<UserShippingAddress> wrapper = new LambdaQueryWrapper<>();
+        wrapper.orderByDesc(UserShippingAddress::getCreateTime);
+        List<UserShippingAddress> list = baseMapper.selectList(wrapper);
         List<AddressVO> addressVOList = AddressConvert.INSTANCE.convertToAddressVOList(list);
         return addressVOList;
+    }
+
+    /**
+     * 根据id删除收货地址
+     *
+     * @param id
+     * @return
+     */
+    @Override
+    public Integer deleteUserShippingAddressById(Integer id) {
+        UserShippingAddress userShippingAddress = baseMapper.selectById(id);
+        if (userShippingAddress == null) {
+            throw new ServerException("地址不存在");
+        }
+        int i = baseMapper.deleteById(id);
+        return i;
+    }
+
+    /**
+     * 根据id获取收货地址
+     *
+     * @param id
+     * @return
+     */
+    @Override
+    public UserShippingAddress getUserShippingAddressById(Integer id) {
+        UserShippingAddress userShippingAddress = baseMapper.selectById(id);
+        if (userShippingAddress == null) {
+            throw new ServerException("地址不存在");
+        }
+        return userShippingAddress;
     }
 
 }

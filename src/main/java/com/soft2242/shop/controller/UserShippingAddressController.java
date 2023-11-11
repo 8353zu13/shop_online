@@ -3,14 +3,17 @@ package com.soft2242.shop.controller;
 import com.soft2242.shop.common.exception.ServerException;
 import com.soft2242.shop.common.result.PageResult;
 import com.soft2242.shop.common.result.Result;
+import com.soft2242.shop.convert.AddressConvert;
 import com.soft2242.shop.entity.UserShippingAddress;
 import com.soft2242.shop.service.UserShippingAddressService;
 import com.soft2242.shop.vo.AddressVO;
 import com.soft2242.shop.vo.GoodsVO;
+import io.swagger.models.auth.In;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
+import org.springframework.boot.autoconfigure.amqp.RabbitConnectionDetails;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -53,10 +56,24 @@ public class UserShippingAddressController {
         return Result.ok(addressId);
     }
 
-    @Operation(summary = "获取用户地址")
+    @Operation(summary = "收货地址列表")
     @GetMapping("address")
-    public Result<List<AddressVO>> getUserAddress(@RequestParam Integer id) {
-        List<AddressVO> list = userShippingAddressService.userShippingAddressList(id);
+    public Result<List<AddressVO>> getUserAddress() {
+        List<AddressVO> list = userShippingAddressService.getUserShippingAddressList();
         return Result.ok(list);
+    }
+
+    @Operation(summary = "删除收获地址")
+    @DeleteMapping("address")
+    public Result<Integer> delUserAddress(@RequestParam Integer id) {
+        int i = userShippingAddressService.deleteUserShippingAddressById(id);
+        return Result.ok(i);
+    }
+
+    @Operation(summary = "收货地址详情")
+    @GetMapping("detail")
+    public Result<UserShippingAddress> getUserAddressDetail(@RequestParam Integer id) {
+        UserShippingAddress userAddress = userShippingAddressService.getUserShippingAddressById(id);
+        return Result.ok(userAddress);
     }
 }
