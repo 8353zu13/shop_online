@@ -31,7 +31,6 @@ public class IndexCarouselController {
     @Operation(summary = "首页/商品分类页-推荐轮播图")
     @GetMapping("banner")
     public Result<List<IndexCarousel>> getList(@RequestParam Integer distributionSite) {
-
         List<IndexCarousel> list = indexCarouselService.getList(distributionSite);
         return Result.ok(list);
     }

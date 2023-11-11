@@ -46,6 +46,11 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
         return list;
     }
 
+    /**
+     * tab分类页-商品分类
+     *
+     * @return
+     */
     @Override
     public List<CategoryVO> getCategoryList() {
         List<CategoryVO> list = new ArrayList<>();

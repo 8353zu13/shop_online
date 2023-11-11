@@ -30,7 +30,6 @@ import java.util.List;
 @AllArgsConstructor
 public class CategoryController {
     private final CategoryService categoryService;
-    private final GoodsService goodsService;
 
     @GetMapping("index")
     @Operation(summary = "首页-商品分类")
