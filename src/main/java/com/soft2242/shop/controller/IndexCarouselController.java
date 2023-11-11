@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @since 2023-11-07
  */
 @RestController
-@RequestMapping("/shop/indexCarousel")
+@RequestMapping("home")
 public class IndexCarouselController {
 
 }

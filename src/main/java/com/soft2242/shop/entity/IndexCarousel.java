@@ -7,6 +7,8 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
 import java.time.LocalDateTime;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
@@ -45,13 +47,16 @@ public class IndexCarousel {
     @ApiModelProperty("逻辑删除(0-未删除，1-已删除)")
     @TableField("delete_flag")
     @TableLogic
+    @JsonIgnore
     private Byte deleteFlag;
 
     @ApiModelProperty("创建时间")
     @TableField(value = "create_time", fill = FieldFill.INSERT)
+    @JsonIgnore
     private LocalDateTime createTime;
 
     @ApiModelProperty("更新时间")
+    @JsonIgnore
     @TableField(value = "update_time", fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime updateTime;
 }
