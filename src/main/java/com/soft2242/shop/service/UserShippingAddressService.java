@@ -37,7 +37,7 @@ public interface UserShippingAddressService extends IService<UserShippingAddress
      *
      * @return
      */
-    List<AddressVO> getUserShippingAddressList();
+    List<AddressVO> getUserShippingAddressList(Integer userId);
 
     /**
      * 根据id删除收货地址
@@ -45,13 +45,13 @@ public interface UserShippingAddressService extends IService<UserShippingAddress
      * @param id
      * @return
      */
-    Integer deleteUserShippingAddressById(Integer id);
+    void removeShippingAddress(Integer id);
 
     /**
-     * 根据id获取收货地址
+     * 根据Id获取收货地址详情
      * 
      * @param id
      * @return
      */
-    UserShippingAddress getUserShippingAddressById(Integer id);
+    AddressVO getAddressInfoById(Integer id);
 }
