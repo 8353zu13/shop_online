@@ -139,4 +139,24 @@ public class UserShoppingCartServiceImpl extends ServiceImpl<UserShoppingCartMap
         // 3.删除购物车信息
         removeBatchByIds(deleteCartList);
     }
+
+    /**
+     * 购物车全选/取消全选
+     *
+     * @param selected
+     * @param userId
+     */
+    @Override
+    public void editCartSelected(Boolean selected, Integer userId) {
+        // 1.查询用户的购物车列表
+        List<UserShoppingCart> cartList =
+            baseMapper.selectList(new LambdaQueryWrapper<UserShoppingCart>().eq(UserShoppingCart::getUserId, userId));
+        if (cartList.size() == 0) {
+            return;
+        }
+        // 2.批量修改购物车选中状态
+        cartList.stream().forEach((item -> item.setSelected(selected)));
+        // 3.数据库数据更新
+        saveOrUpdateBatch(cartList);
+    }
 }
