@@ -5,6 +5,7 @@ import java.util.List;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.soft2242.shop.entity.UserShoppingCart;
 import com.soft2242.shop.query.CartQuery;
+import com.soft2242.shop.query.EditCartQuery;
 import com.soft2242.shop.vo.CartGoodsVO;
 
 /**
@@ -32,5 +33,13 @@ public interface UserShoppingCartService extends IService<UserShoppingCart> {
      * @return
      */
     List<CartGoodsVO> shopCartList(Integer userId);
+
+    /**
+     * 修改购物车
+     * 
+     * @param query
+     * @return
+     */
+    CartGoodsVO editCart(EditCartQuery query);
 
 }

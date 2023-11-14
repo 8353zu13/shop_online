@@ -6,6 +6,7 @@ import com.soft2242.shop.entity.UserShoppingCart;
 import com.soft2242.shop.mapper.GoodsMapper;
 import com.soft2242.shop.mapper.UserShoppingCartMapper;
 import com.soft2242.shop.query.CartQuery;
+import com.soft2242.shop.query.EditCartQuery;
 import com.soft2242.shop.service.UserShoppingCartService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.soft2242.shop.vo.CartGoodsVO;
@@ -79,5 +80,40 @@ public class UserShoppingCartServiceImpl extends ServiceImpl<UserShoppingCartMap
     public List<CartGoodsVO> shopCartList(Integer userId) {
         List<CartGoodsVO> list = baseMapper.getCartGoodsInfo(userId);
         return list;
+    }
+
+    /**
+     * 修改购物车
+     *
+     * @param query
+     * @return
+     */
+    @Override
+    public CartGoodsVO editCart(EditCartQuery query) {
+        UserShoppingCart userShoppingCart = baseMapper.selectById(query.getId());
+        if(userShoppingCart == null){
+            throw new ServerException("购物车信息不存在");
+        }
+
+        userShoppingCart.setCount(query.getCount());
+        userShoppingCart.setSelected(query.getSelected());
+        baseMapper.updateById(userShoppingCart);
+        //查询购物车信息
+        Goods goods = goodsMapper.selectById(userShoppingCart.getGoodsId());
+        if(query.getCount() > goods.getInventory()){
+            throw new ServerException(goods.getName() + "库存数量不足");
+        }
+        CartGoodsVO goodsVO = new CartGoodsVO();
+        goodsVO.setId(userShoppingCart.getId());
+        goodsVO.setName(goods.getName());
+        goodsVO.setAttrsText(userShoppingCart.getAttrsText());
+        goodsVO.setPrice(userShoppingCart.getPrice());
+        goodsVO.setNowPrice(goods.getPrice());
+        goodsVO.setSelected(userShoppingCart.getSelected());
+        goodsVO.setStock(goods.getInventory());
+        goodsVO.setCount(query.getCount());
+        goodsVO.setPicture(goods.getCover());
+        goodsVO.setDiscount(goods.getDiscount());
+        return goodsVO;
     }
 }
