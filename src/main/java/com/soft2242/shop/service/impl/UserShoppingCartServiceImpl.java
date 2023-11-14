@@ -12,6 +12,8 @@ import com.soft2242.shop.vo.CartGoodsVO;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 /**
  * <p>
  * 服务实现类
@@ -65,5 +67,17 @@ public class UserShoppingCartServiceImpl extends ServiceImpl<UserShoppingCartMap
         goodsVO.setPicture(goods.getCover());
         goodsVO.setDiscount(goods.getDiscount());
         return goodsVO;
+    }
+
+    /**
+     * 购物车列表
+     *
+     * @param userId
+     * @return
+     */
+    @Override
+    public List<CartGoodsVO> shopCartList(Integer userId) {
+        List<CartGoodsVO> list = baseMapper.getCartGoodsInfo(userId);
+        return list;
     }
 }
