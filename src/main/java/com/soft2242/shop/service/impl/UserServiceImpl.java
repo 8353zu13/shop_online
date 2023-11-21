@@ -93,6 +93,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
         String token = JWTUtils.generateToken(JWT_SECRET, tokenVO.toMap());
         service.set(APP_NAME + userVO.getId(), token, APP_TOKEN_EXPIRE_TIME);
+        System.out.println(token);
         userVO.setToken(token);
         return userVO;
     }

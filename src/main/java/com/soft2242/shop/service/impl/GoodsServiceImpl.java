@@ -16,6 +16,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -113,15 +114,15 @@ public class GoodsServiceImpl extends ServiceImpl<GoodsMapper, Goods> implements
 
         List<GoodsSpecification> specifications = goodsSpecificationMapper
             .selectList(new LambdaQueryWrapper<GoodsSpecification>().eq(GoodsSpecification::getGoodsId, goods.getId()));
+        goodsVO.setSpecs(specifications);
 
         List<GoodsSpecificationDetail> goodsSpecificationDetails = goodsSpecificationDetailMapper.selectList(
             new LambdaQueryWrapper<GoodsSpecificationDetail>().eq(GoodsSpecificationDetail::getGoodsId, goods.getId()));
-
+        goodsVO.setSkus(goodsSpecificationDetails);
         List<Goods> goodsList = baseMapper.selectList(new LambdaQueryWrapper<Goods>()
             .eq(Goods::getCategoryId, goods.getCategoryId()).ne(Goods::getId, goods.getId()));
         List<RecommendGoodsVO> goodsVOList = GoodsConvert.INSTANCE.convertToRecommendGoodsVOList(goodsList);
         goodsVO.setSimilarProducts(goodsVOList);
-
         return goodsVO;
     }
 }
