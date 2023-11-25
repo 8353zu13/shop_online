@@ -110,4 +110,14 @@ public class UserOrderController {
         userOrderService.deleteOrder(ids, userId);
         return Result.ok();
     }
+
+    @Operation(summary = "支付订单")
+    @GetMapping("pay")
+    public Result payOrder(@RequestParam Integer id) {
+        if (id == null) {
+            throw new ServerException("订单不存在");
+        }
+        userOrderService.payOrder(id);
+        return Result.ok();
+    }
 }

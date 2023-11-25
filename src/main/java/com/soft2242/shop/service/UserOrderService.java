@@ -85,4 +85,11 @@ public interface UserOrderService extends IService<UserOrder> {
      * @param ids
      */
     void deleteOrder(List<Integer> ids, Integer userId);
+
+    /**
+     * 订单支付
+     * 
+     * @param id
+     */
+    void payOrder(Integer id);
 }
