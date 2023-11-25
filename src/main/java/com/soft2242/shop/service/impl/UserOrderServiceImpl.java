@@ -1,5 +1,7 @@
 package com.soft2242.shop.service.impl;
 
+import com.alibaba.fastjson2.JSONArray;
+import com.alibaba.fastjson2.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.soft2242.shop.common.exception.ServerException;
@@ -282,15 +284,14 @@ public class UserOrderServiceImpl extends ServiceImpl<UserOrderMapper, UserOrder
      * @param query
      * @return
      */
-    @Override
     public SubmitOrderVO getPreNowOrderDetail(OrderPreQuery query) {
         SubmitOrderVO submitOrderVO = new SubmitOrderVO();
-        // 1.查询用户收货地址
+        // 1、查询用户收货地址
         List<UserAddressVO> addressList = getAddressListByUserId(query.getUserId(), query.getAddressId());
 
-        List<UserOrderGoodsVO> goodsList = new ArrayList<>();
+        List<UserOrderGoodsVO> goodList = new ArrayList<>();
 
-        // 2.商品信息
+        // 2、商品信息
         Goods goods = goodsMapper.selectById(query.getId());
         if (goods == null) {
             throw new ServerException("商品信息不存在");
@@ -302,7 +303,7 @@ public class UserOrderServiceImpl extends ServiceImpl<UserOrderMapper, UserOrder
         userOrderGoodsVO.setId(goods.getId());
         userOrderGoodsVO.setName(goods.getName());
         userOrderGoodsVO.setPicture(goods.getCover());
-        userOrderGoodsVO.setCount(query.getAddressId());
+        userOrderGoodsVO.setCount(query.getCount());
         userOrderGoodsVO.setAttrsText(query.getAttrsText());
         userOrderGoodsVO.setPrice(goods.getOldPrice());
         userOrderGoodsVO.setPayPrice(goods.getPrice());
@@ -312,9 +313,9 @@ public class UserOrderServiceImpl extends ServiceImpl<UserOrderMapper, UserOrder
         BigDecimal count = new BigDecimal(query.getCount().toString());
         userOrderGoodsVO.setTotalPrice(price.multiply(count).add(freight).doubleValue());
         userOrderGoodsVO.setTotalPayPrice(userOrderGoodsVO.getTotalPrice());
-        goodsList.add(userOrderGoodsVO);
+        goodList.add(userOrderGoodsVO);
 
-        // 3.费用综述信息
+        // 3、费用综述信息
         OrderInfoVO orderInfoVO = new OrderInfoVO();
         orderInfoVO.setGoodsCount(query.getCount());
         orderInfoVO.setTotalPayPrice(userOrderGoodsVO.getTotalPayPrice());
@@ -323,7 +324,7 @@ public class UserOrderServiceImpl extends ServiceImpl<UserOrderMapper, UserOrder
         orderInfoVO.setDiscountPrice(goods.getDiscount());
 
         submitOrderVO.setUserAddresses(addressList);
-        submitOrderVO.setGoods(goodsList);
+        submitOrderVO.setGoods(goodList);
         submitOrderVO.setSummary(orderInfoVO);
         return submitOrderVO;
     }
@@ -484,5 +485,96 @@ public class UserOrderServiceImpl extends ServiceImpl<UserOrderMapper, UserOrder
         baseMapper.updateById(userOrder);
         // 订单支付成功,异步任务取消
         cancelScheduledTask();
+    }
+
+    /**
+     * 模拟发货
+     *
+     * @param id
+     */
+    @Override
+    public void consignOrder(Integer id) {
+        UserOrder userOrder = baseMapper.selectById(id);
+        if (userOrder == null) {
+            throw new ServerException("订单不存在");
+        }
+        if (userOrder.getStatus() != OrderStatusEnum.WAITING_FOR_SHIPMENT.getValue().byteValue()) {
+            throw new ServerException("订单已发货");
+        }
+        userOrder.setStatus(OrderStatusEnum.WAITING_FOR_DELIVERY.getValue().byteValue());
+        userOrder.setConsignTime(LocalDateTime.now());
+        baseMapper.updateById(userOrder);
+    }
+
+    /**
+     * 确认收货
+     *
+     * @param id
+     * @return
+     */
+    @Override
+    public OrderDetailVO receiptOrder(Integer id) {
+        // 1.查询订单信息，只有待收货状态才能修改订单状态
+        UserOrder userOrder = baseMapper.selectById(id);
+        if (userOrder == null) {
+            throw new ServerException("订单不存在");
+        }
+        if (userOrder.getStatus() != OrderStatusEnum.WAITING_FOR_DELIVERY.getValue().byteValue()) {
+            throw new ServerException("暂时不能确认收货");
+        }
+        userOrder.setEndTime(LocalDateTime.now());
+        baseMapper.updateById(userOrder);
+        OrderDetailVO orderDetailVO = UserOrderDetailConvert.INSTANCE.convertToOrderDetailVO(userOrder);
+        // 3.根据订单信息查询收货地址信息
+        UserShippingAddress userShippingAddress = userShippingAddressMapper.selectById(userOrder.getAddressId());
+        if (userShippingAddress != null) {
+            orderDetailVO.setReceiverContact(userShippingAddress.getReceiver());
+            orderDetailVO.setReceiverAddress(userShippingAddress.getAddress());
+            orderDetailVO.setReceiverMobile(userShippingAddress.getContact());
+        }
+        // 4.查询订单包含的商品信息返回给客户端
+        List<UserOrderGoods> goodsList = userOrderGoodsMapper
+            .selectList(new LambdaQueryWrapper<UserOrderGoods>().eq(UserOrderGoods::getOrderId, userOrder.getId()));
+        orderDetailVO.setSkus(goodsList);
+        return orderDetailVO;
+    }
+
+    @Override
+    public OrderLogisticVO getOrderLogistics(Integer id) {
+        OrderLogisticVO orderLogisticVO = new OrderLogisticVO();
+        UserOrder userOrder = baseMapper.selectById(id);
+        if (userOrder == null) {
+            throw new ServerException("订单信息不存在");
+        }
+
+        if (userOrder.getStatus() != OrderStatusEnum.WAITING_FOR_DELIVERY.getValue().byteValue()
+            && userOrder.getStatus() != OrderStatusEnum.WAITING_FOR_REVIEW.getValue().byteValue()
+            && userOrder.getStatus() != OrderStatusEnum.COMPLETED.getValue().byteValue()) {
+            throw new ServerException("暂时查询不到物流信息");
+        }
+
+        String logistics =
+            "[{\n" + "\t\t\"id\": \"1716355305111031810\",\n" + "\t\t\"text\": \"小兔兔到了小福家里，请签收\"\n" + "\t},\n" + "\t{\n"
+                + "\t\t\"id\": \"1716355305106837507\",\n" + "\t\t\"text\": \"小兔兔到了小熊站，小站正在赶往目的地\"\n" + "\t},\n"
+                + "\t{\n" + "\t\t\"id\": \"1716355305106837506\",\n" + "\t\t\"text\": \"小兔兔到了小猴站，小站正在分发噢\"\n" + "\t},\n"
+                + "\t{\n" + "\t\t\"id\": \"1716355305102643201\",\n" + "\t\t\"text\": \"小兔兔已经发货了\"\n" + "\t}\n" + "]";
+        List<LogisticItemVO> list = JSONArray.parseArray(logistics, LogisticItemVO.class);
+        orderLogisticVO.setCount(userOrder.getTotalCount());
+
+        JSONObject companyInfo = new JSONObject();
+        companyInfo.put("name", "哪李贵了物流速递");
+        companyInfo.put("number", "e0deadac-7189-477e-89f0-e7ca4753d139");
+        companyInfo.put("tel", "13813811778");
+        orderLogisticVO.setCompany(companyInfo);
+
+        int day = 4;
+        for (LogisticItemVO object : list) {
+            object.setTime(userOrder.getPayTime().plusDays(day));
+            day--;
+        }
+
+        orderLogisticVO.setList(list);
+
+        return orderLogisticVO;
     }
 }

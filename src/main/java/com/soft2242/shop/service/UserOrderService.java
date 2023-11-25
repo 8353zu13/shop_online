@@ -1,5 +1,7 @@
 package com.soft2242.shop.service;
 
+import java.util.List;
+
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.soft2242.shop.common.result.PageResult;
 import com.soft2242.shop.entity.UserOrder;
@@ -7,11 +9,9 @@ import com.soft2242.shop.query.CancelGoodsQuery;
 import com.soft2242.shop.query.OrderPreQuery;
 import com.soft2242.shop.query.OrderQuery;
 import com.soft2242.shop.vo.OrderDetailVO;
+import com.soft2242.shop.vo.OrderLogisticVO;
 import com.soft2242.shop.vo.SubmitOrderVO;
 import com.soft2242.shop.vo.UserOrderVO;
-import io.swagger.models.auth.In;
-
-import java.util.List;
 
 /**
  * <p>
@@ -92,4 +92,27 @@ public interface UserOrderService extends IService<UserOrder> {
      * @param id
      */
     void payOrder(Integer id);
+
+    /**
+     * 模拟发货
+     * 
+     * @param id
+     */
+    void consignOrder(Integer id);
+
+    /**
+     * 确认收货
+     * 
+     * @param id
+     * @return
+     */
+    OrderDetailVO receiptOrder(Integer id);
+
+    /**
+     * 物流订单信息
+     *
+     * @param id
+     * @return
+     */
+    OrderLogisticVO getOrderLogistics(Integer id);
 }
