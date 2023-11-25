@@ -514,7 +514,6 @@ public class UserOrderServiceImpl extends ServiceImpl<UserOrderMapper, UserOrder
      */
     @Override
     public OrderDetailVO receiptOrder(Integer id) {
-        // 1.查询订单信息，只有待收货状态才能修改订单状态
         UserOrder userOrder = baseMapper.selectById(id);
         if (userOrder == null) {
             throw new ServerException("订单不存在");
@@ -522,17 +521,17 @@ public class UserOrderServiceImpl extends ServiceImpl<UserOrderMapper, UserOrder
         if (userOrder.getStatus() != OrderStatusEnum.WAITING_FOR_DELIVERY.getValue().byteValue()) {
             throw new ServerException("暂时不能确认收货");
         }
+        userOrder.setStatus(OrderStatusEnum.WAITING_FOR_REVIEW.getValue().byteValue());
         userOrder.setEndTime(LocalDateTime.now());
         baseMapper.updateById(userOrder);
         OrderDetailVO orderDetailVO = UserOrderDetailConvert.INSTANCE.convertToOrderDetailVO(userOrder);
-        // 3.根据订单信息查询收货地址信息
         UserShippingAddress userShippingAddress = userShippingAddressMapper.selectById(userOrder.getAddressId());
         if (userShippingAddress != null) {
             orderDetailVO.setReceiverContact(userShippingAddress.getReceiver());
             orderDetailVO.setReceiverAddress(userShippingAddress.getAddress());
             orderDetailVO.setReceiverMobile(userShippingAddress.getContact());
+
         }
-        // 4.查询订单包含的商品信息返回给客户端
         List<UserOrderGoods> goodsList = userOrderGoodsMapper
             .selectList(new LambdaQueryWrapper<UserOrderGoods>().eq(UserOrderGoods::getOrderId, userOrder.getId()));
         orderDetailVO.setSkus(goodsList);
