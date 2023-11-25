@@ -2,25 +2,41 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.soft2242.shop.mapper.GoodsMapper">
 
-    <!-- 通用查询映射结果 -->
-    <resultMap id="BaseResultMap" type="com.soft2242.shop.entity.Goods">
-        <id column="id" property="id" />
-        <result column="price" property="price" />
-        <result column="old_price" property="oldPrice" />
-        <result column="cover" property="cover" />
-        <result column="category_id" property="categoryId" />
-        <result column="tab_id" property="tabId" />
-        <result column="name" property="name" />
-        <result column="description" property="description" />
-        <result column="inventory" property="inventory" />
-        <result column="discount" property="discount" />
-        <result column="sales_count" property="salesCount" />
-        <result column="freight" property="freight" />
-        <result column="main_pictures" property="mainPictures" />
-        <result column="product_pictures" property="productPictures" />
-        <result column="delete_flag" property="deleteFlag" />
-        <result column="create_time" property="createTime" />
-        <result column="update_time" property="updateTime" />
-    </resultMap>
+	<!-- 通用查询映射结果 -->
+	<resultMap id="BaseResultMap" type="com.soft2242.shop.entity.Goods">
+		<id column="id" property="id"/>
+		<result column="price" property="price"/>
+		<result column="old_price" property="oldPrice"/>
+		<result column="cover" property="cover"/>
+		<result column="category_id" property="categoryId"/>
+		<result column="tab_id" property="tabId"/>
+		<result column="name" property="name"/>
+		<result column="description" property="description"/>
+		<result column="inventory" property="inventory"/>
+		<result column="discount" property="discount"/>
+		<result column="sales_count" property="salesCount"/>
+		<result column="freight" property="freight"/>
+		<result column="main_pictures" property="mainPictures"/>
+		<result column="product_pictures" property="productPictures"/>
+		<result column="delete_flag" property="deleteFlag"/>
+		<result column="create_time" property="createTime"/>
+		<result column="update_time" property="updateTime"/>
+	</resultMap>
+	<select id="getGoodsListByOrderId" resultType="com.soft2242.shop.vo.UserOrderGoodsVO">
+		select g.id,
+		       g.price,
+		       g.cover,
+		       g.name,
+		       g.cover             as picture,
+		       og.count,
+		       og.attrs_text,
+		       og.price            as payPrice,
+		       g.price * og.count  as totalPrice,
+		       og.price * og.count as totalPayPrice
+		from t_goods as g
+			     left join t_user_order_goods as og on og.goods_id = g.id and g.delete_flag = 0
+		where og.order_id = #{id}
+		  and og.delete_flag = 0
+	</select>
 
 </mapper>

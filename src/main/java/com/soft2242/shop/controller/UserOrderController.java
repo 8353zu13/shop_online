@@ -3,6 +3,7 @@ package com.soft2242.shop.controller;
 import com.alibaba.fastjson2.JSONObject;
 import com.soft2242.shop.common.exception.ServerException;
 import com.soft2242.shop.common.result.Result;
+import com.soft2242.shop.query.OrderPreQuery;
 import com.soft2242.shop.service.UserOrderService;
 import com.soft2242.shop.vo.OrderDetailVO;
 import com.soft2242.shop.vo.SubmitOrderVO;
@@ -58,5 +59,25 @@ public class UserOrderController {
         Integer userId = getUserId(request);
         SubmitOrderVO preOrderDetail = userOrderService.getPreOrderDetail(userId);
         return Result.ok(preOrderDetail);
+    }
+
+    @Operation(summary = "填写订单-获取立即购买订单")
+    @PostMapping("pre/now")
+    public Result<SubmitOrderVO> getPreNowOrderDetail(@RequestBody @Validated OrderPreQuery query,
+        HttpServletRequest request) {
+        query.setUserId(getUserId(request));
+        SubmitOrderVO preNowOrderDetail = userOrderService.getPreNowOrderDetail(query);
+        System.out.println(query.getCount() + "-----------");
+        return Result.ok(preNowOrderDetail);
+    }
+
+    @Operation(summary = "填写订单 - 获取再次购买订单")
+    @GetMapping("/repurchase")
+    public Result<SubmitOrderVO> getRepurchaseOrderDetail(@RequestParam Integer id) {
+        if (id == null) {
+            throw new ServerException("请求参数异常");
+        }
+        SubmitOrderVO repurchaseOrderDetail = userOrderService.getRepurchaseOrderDetail(id);
+        return Result.ok(repurchaseOrderDetail);
     }
 }

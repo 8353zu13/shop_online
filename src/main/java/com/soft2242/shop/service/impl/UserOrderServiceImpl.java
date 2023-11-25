@@ -8,6 +8,7 @@ import com.soft2242.shop.entity.*;
 import com.soft2242.shop.enums.OrderStatusEnum;
 import com.soft2242.shop.mapper.*;
 import com.soft2242.shop.query.OrderGoodsQuery;
+import com.soft2242.shop.query.OrderPreQuery;
 import com.soft2242.shop.service.UserOrderGoodsService;
 import com.soft2242.shop.service.UserOrderService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -265,6 +266,86 @@ public class UserOrderServiceImpl extends ServiceImpl<UserOrderMapper, UserOrder
         orderInfoVO.setTotalPrice(totalPrice.doubleValue());
         orderInfoVO.setPostFee(totalFreight.doubleValue());
 
+        submitOrderVO.setUserAddresses(addressList);
+        submitOrderVO.setGoods(goodsList);
+        submitOrderVO.setSummary(orderInfoVO);
+        return submitOrderVO;
+    }
+
+    /**
+     * 填写订单 - 获取立即购买订单
+     *
+     * @param query
+     * @return
+     */
+    @Override
+    public SubmitOrderVO getPreNowOrderDetail(OrderPreQuery query) {
+        SubmitOrderVO submitOrderVO = new SubmitOrderVO();
+        // 1.查询用户收货地址
+        List<UserAddressVO> addressList = getAddressListByUserId(query.getUserId(), query.getAddressId());
+
+        List<UserOrderGoodsVO> goodsList = new ArrayList<>();
+
+        // 2.商品信息
+        Goods goods = goodsMapper.selectById(query.getId());
+        if (goods == null) {
+            throw new ServerException("商品信息不存在");
+        }
+        if (query.getCount() > goods.getInventory()) {
+            throw new ServerException(goods.getName() + "库存数量不足");
+        }
+        UserOrderGoodsVO userOrderGoodsVO = new UserOrderGoodsVO();
+        userOrderGoodsVO.setId(goods.getId());
+        userOrderGoodsVO.setName(goods.getName());
+        userOrderGoodsVO.setPicture(goods.getCover());
+        userOrderGoodsVO.setCount(query.getAddressId());
+        userOrderGoodsVO.setAttrsText(query.getAttrsText());
+        userOrderGoodsVO.setPrice(goods.getOldPrice());
+        userOrderGoodsVO.setPayPrice(goods.getPrice());
+
+        BigDecimal freight = new BigDecimal(goods.getFreight().toString());
+        BigDecimal price = new BigDecimal(goods.getPrice().toString());
+        BigDecimal count = new BigDecimal(query.getCount().toString());
+        userOrderGoodsVO.setTotalPrice(price.multiply(count).add(freight).doubleValue());
+        userOrderGoodsVO.setTotalPayPrice(userOrderGoodsVO.getTotalPrice());
+        goodsList.add(userOrderGoodsVO);
+
+        // 3.费用综述信息
+        OrderInfoVO orderInfoVO = new OrderInfoVO();
+        orderInfoVO.setGoodsCount(query.getCount());
+        orderInfoVO.setTotalPayPrice(userOrderGoodsVO.getTotalPayPrice());
+        orderInfoVO.setTotalPrice(userOrderGoodsVO.getTotalPrice());
+        orderInfoVO.setPostFee(goods.getFreight());
+        orderInfoVO.setDiscountPrice(goods.getDiscount());
+
+        submitOrderVO.setUserAddresses(addressList);
+        submitOrderVO.setGoods(goodsList);
+        submitOrderVO.setSummary(orderInfoVO);
+        return submitOrderVO;
+    }
+
+    /**
+     * 填写订单 - 获取再次购买订单
+     *
+     * @param id
+     * @return
+     */
+    @Override
+    public SubmitOrderVO getRepurchaseOrderDetail(Integer id) {
+        SubmitOrderVO submitOrderVO = new SubmitOrderVO();
+        // 1.根据订单id查询订单信息获取 用户信息和地址
+        UserOrder userOrder = baseMapper.selectById(id);
+        // 2.查询用户收货地址信息
+        List<UserAddressVO> addressList = getAddressListByUserId(userOrder.getUserId(), userOrder.getAddressId());
+        // 3.商品信息
+        List<UserOrderGoodsVO> goodsList = goodsMapper.getGoodsListByOrderId(id);
+        // 4.综述信息
+        OrderInfoVO orderInfoVO = new OrderInfoVO();
+        orderInfoVO.setGoodsCount(userOrder.getTotalCount());
+        orderInfoVO.setTotalPrice(userOrder.getTotalPrice());
+        orderInfoVO.setPostFee(userOrder.getTotalFreight());
+        orderInfoVO.setTotalPayPrice(userOrder.getTotalPrice());
+        orderInfoVO.setDiscountPrice(0.00);
         submitOrderVO.setUserAddresses(addressList);
         submitOrderVO.setGoods(goodsList);
         submitOrderVO.setSummary(orderInfoVO);

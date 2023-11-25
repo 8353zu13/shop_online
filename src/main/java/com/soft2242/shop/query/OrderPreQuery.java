@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 @Data
+
 public class OrderPreQuery {
     @Schema(description = "商品主键id")
     @NotNull(message = "主键不能为空")

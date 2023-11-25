@@ -1,13 +1,11 @@
 package com.soft2242.shop.service;
 
-import com.soft2242.shop.entity.UserOrder;
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.soft2242.shop.entity.UserOrderGoods;
+import com.soft2242.shop.entity.UserOrder;
+import com.soft2242.shop.query.OrderPreQuery;
 import com.soft2242.shop.vo.OrderDetailVO;
 import com.soft2242.shop.vo.SubmitOrderVO;
 import com.soft2242.shop.vo.UserOrderVO;
-
-import java.util.List;
 
 /**
  * <p>
@@ -37,8 +35,25 @@ public interface UserOrderService extends IService<UserOrder> {
 
     /**
      * 填写订单 - 获取预付订单
+     * 
      * @param userId
      * @return
      */
     SubmitOrderVO getPreOrderDetail(Integer userId);
+
+    /**
+     * 填写订单 - 获取立即购买订单
+     * 
+     * @param query
+     * @return
+     */
+    SubmitOrderVO getPreNowOrderDetail(OrderPreQuery query);
+
+    /**
+     * 填写订单 - 获取再次购买订单
+     * 
+     * @param id
+     * @return
+     */
+    SubmitOrderVO getRepurchaseOrderDetail(Integer id);
 }
