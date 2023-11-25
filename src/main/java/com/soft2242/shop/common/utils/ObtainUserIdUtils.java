@@ -1,11 +1,8 @@
 package com.soft2242.shop.common.utils;
 
 import com.soft2242.shop.common.exception.ServerException;
-import com.soft2242.shop.common.result.Result;
-import com.soft2242.shop.entity.User;
-import io.swagger.v3.oas.annotations.Operation;
+
 import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.web.bind.annotation.GetMapping;
 
 public class ObtainUserIdUtils {
 

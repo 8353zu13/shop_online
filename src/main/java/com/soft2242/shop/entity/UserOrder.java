@@ -11,6 +11,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 /**
  * <p>
@@ -24,6 +25,7 @@ import lombok.Setter;
 @Setter
 @TableName("t_user_order")
 @ApiModel(value = "UserOrder对象", description = "")
+@ToString
 public class UserOrder {
 
     @ApiModelProperty("自增主键")
